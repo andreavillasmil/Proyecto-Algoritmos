@@ -8,6 +8,7 @@ from Estudiante import  *
 def init(usuarios, posts):
   get_users(usuarios)
   get_posts(posts)
+  user_posts(usuarios, posts)
 
 
 def get_users(usuarios):
@@ -37,12 +38,21 @@ def get_posts(posts):
    res = requests.get("https://raw.githubusercontent.com/Algoritmos-y-Programacion-2223-3/api-proyecto/main/posts.json")
    res = json.loads(res.text)
 
-   for post in res:
-      usuario = post["publisher"]
-      kind = post["type"]
-      descripcion = post["caption"]
-      fecha = post["date"]
-      tags = post["tags"]
+   for post_data in res:
+      usuario = post_data["publisher"]
+      kind = post_data["type"]
+      descripcion = post_data["caption"]
+      fecha = post_data["date"]
+      tags = post_data["tags"]
 
-      post = Post.Post(usuario, kind, descripcion, fecha, tags)
-      posts.append(post)
+      new_post = Post.Post(usuario, kind, descripcion, fecha, tags)
+      posts.append(new_post)
+
+def user_posts(usuarios, posts):
+  for post in posts:
+        for user in usuarios:
+            if post.usuario == user.dni:
+                if isinstance(user, Profesor):
+                    user.posts.append(post)
+                elif isinstance(user, Estudiante):
+                    user.posts.append(post)
