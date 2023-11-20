@@ -4,6 +4,11 @@ class Profesor(Usuario):
     def __init__(self, dni, nombre, apellido, correo, username, kind, seguidores, departamento):
         super().__init__(dni, nombre, apellido, correo, username, kind, seguidores)
         self.departamento = departamento
+        self.amonestaciones = 0
+        self.likes = []
+        self.comentarios = []
+        self.solicitudes = []
+
 
     def show(self):
         return f'''
@@ -15,6 +20,6 @@ class Profesor(Usuario):
             Type: {self.kind}
             Departamento: {self.departamento}
             Seguidores: {self.seguidores}
+            Posts: {self.posts}
             '''
     
-   
