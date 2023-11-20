@@ -1,4 +1,3 @@
-
 class Usuario():
     def __init__(self, dni, nombre, apellido, correo, username, kind, seguidores):
         self.dni = dni
@@ -9,9 +8,9 @@ class Usuario():
         self.kind = kind
         self.posts = []
         self.seguidores = seguidores
-        self.seguidos = []
         self.likes = []
         self.comentarios = []
+        self.solicitudes = []
 
     def show(self):
         return f'''
@@ -22,7 +21,5 @@ class Usuario():
         Username: {self.username}
         Type: {self.kind}
         Seguidores: {self.seguidores}
+        Posts: {self.posts}
         '''
-    
-    
-    
