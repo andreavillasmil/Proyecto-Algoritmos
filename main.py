@@ -34,22 +34,27 @@ def main():
                     1. Registrar nuevo usuario
                     2. Buscar perfil
                     3. Cambiar información personal de tu cuenta
-                    4. Borrar datos de tu cuenta
+                    4. Borrar tu cuenta
                     5. Volver al menu principal''')
                 
                 action = input(f'''Elige qué función deseas realizar: ''')
                 if action == "1":
                     registro_usuario(usuarios)
+                    break
                 elif action == "2":
                     busqueda_usuario(usuarios)
+                    break
                 elif action == "3":
                     cambiar_informacion(usuarios)
+                    break
                 elif action == "4":
                     borrado(usuarios)
+                    break
                 elif action == "5":
                     break
                 else:
                     action = input('Por favor ingresa una opción válida: ')
+
     #Módulo de Gestión de Multimedia
         elif option == 2:
             while True:
@@ -61,6 +66,7 @@ def main():
                         break
                 if not usuario_encontrado:
                     print("El usuario no existe")
+                    break
 
                 print(f'''
                     1. Registrar nuevo post
@@ -70,18 +76,88 @@ def main():
                 action = input(f'''Elige qué función deseas realizar: ''')
                 if action == "1":
                     registro_post(usuarios, posts, usuario1)
+                    break
                 elif action == "2":
                     busqueda_post(usuarios, posts, usuario1)
+                    break
                 elif action == "3":
                     break
                 else:
                     action = input('Por favor ingresa una opción válida: ')
+
     #Módulo de Gestión de Interacciones
         elif option == 3:
-            pass
+            while True:
+                usuario_encontrado = False
+                usuario1 = input('Ingrese su username: ')
+                for user in usuarios:
+                    if user.username.lower() == usuario1.lower():
+                        usuario1 = user.dni
+                        usuario_encontrado = True
+                        break
+                if not usuario_encontrado:
+                    print("El usuario no existe")
+                    break
+                print(f'''
+                1. Seguir a un usuario
+                2. Dejar de seguir a un usuario
+                3. Eliminar comentario
+                4. Revisar solicitudes
+                5. Volver al menu principal
+                ''')
+                action = input('Elige que accion deseas realizar: ')
+                if action == '1':
+                    seguir_usuario(usuario1, usuarios)
+                    break
+                elif action == '2':
+                    dejar_seguir_usuario(usuario1, usuarios)
+                    break
+                elif action == '3':
+                    eliminar_comentario(usuario1, usuarios, posts)
+                    break
+                elif action == '4':
+                    revisar_solicitudes(usuario1, usuarios)
+                elif action == '5':
+                    break
+                else:
+                    print('Elige una opcion valida')
+
+
     #Módulo de Gestión Moderación
         elif option == 4:
-            pass
+            while True:
+                kind = input('Es usted estudiante(e), profesor(p) o administrador(a): ')
+                if kind == 'a':
+                    print('Bienvenido al módulo de gestión de moderación')
+                    print(f'''
+                    1. Eliminar un post
+                    2. Eliminar un comentario
+                    3. Eliminar un usuario
+                    4. Volver al menú principal
+                    ''')
+                    action = input(f'''Elige qué acción deseas realizar: ''')
+                    if action == '1':
+                        eliminar_post(usuarios, posts)
+                        break
+                    elif action == '2':
+                        eliminar_comentario(usuarios, posts)
+                        break
+                    elif action == '3':
+                        eliminar_usuario(usuarios)
+                        break
+                    elif action == '4':
+                        break
+                    else:
+                        print('Por favor elija una opción válida: ')
+
+                elif kind == 'p':
+                    print('Como usted es profesor, no puede realizar funciones de administrador')
+                    print('Sin embargo, puede notificar al personal administrativo en caso de ver actividad ofensiva')
+                elif kind == 'e':
+                    print('Los estudiantes no pueden realizar funciones de administrador')
+                    break
+                else:
+                    print('Por favor escoja una opción válida')
     #Módulo de Estadísticas
         elif option == 5:
             pass
@@ -273,6 +349,35 @@ def borrado(usuarios):
             elif action == 'n':
                 continue
 
+#Esta funcion la ocuparemos para verificar si un usuario A sigue a un usuario B para poder ver sus posts.
+def ver_posts(usuarios, usuario, usuario1):
+    for user in usuarios:
+                if (user.username).lower() == usuario.lower():
+                    if usuario1 in user.seguidores:
+                        continue
+                    else:
+                            print(f'No puedes ver los posts de {usuario1}, ya que no lo sigues')
+                            break
+                    
+#Esta funcion la ocuparemos para identificar un post en específico.
+def identify_posts(usuarios, posts):
+    usuario = input('Ingrese el usuario que publicó el post: ')
+    usuario_encontrado = False
+    for user in usuarios:
+        if (user.username).lower() == usuario.lower():
+            usuario = user.dni
+            usuario_encontrado = True
+            break
+    if not usuario_encontrado:
+        print("No se encontró el usuario")
+    descripcion = input('Ingrese la descripción del post del usuario que desea visualizar: ')
+    for post in posts:
+        if usuario == post.usuario:
+            if descripcion.lower() == post.descripcion.lower():
+                print(post.show())
+                return post and usuario
+    print("No se encontró el post")
+
 
 #Para registrar un post, pedimos por teclado los datos requeridos: usuario (primero se pide el username, que luego se convertira al
 #id del mismo), tipo de post, descripcion, la fecha se asigna de acuerdo al momento que se publique, y los hashtags que se vayan
@@ -280,10 +385,9 @@ def borrado(usuarios):
 #y se emite un mensaje de que el post ha sido registrado de manera existosa. 
 def registro_post(usuarios, posts, usuario1):
     tags = []
-    usuario1 = usuario
     resultado = False
     for user in usuarios:
-        if (user.username).lower() == usuario.lower():
+        if (user.username).lower() == usuario1.lower():
                 print(user.show())
                 usuario = user.dni
                 resultado = True
@@ -321,9 +425,12 @@ def registro_post(usuarios, posts, usuario1):
 #Una vez confirmada su identidad, se le pregunta por teclado su desea buscar un post por username de la persona, o por hashtag.
 #Si desea buscarlo por el username, se pide que ingrese por teclado el username de la persona que busca, si se cumple la condicion 
 # de 'ver_posts', se mostrara la lista de posts del usuario ingresado, de lo contrario, se indica que no puede ser visualizado.
+#Además se incluye la función 'identify_post' donde se pregunta al usuario si desea ver un post en particular; luego se pregunta si 
+#se quiere dejar un like y/o comentar. En caso afirmativo para ambos, se agregan las interacciones a los likes y comentarios del post.
 #Por otro lado, si se busca por hashtag, se pide que ingrese por teclado el nombre del hashtag; si se cumple la condicion 
 #'ver _posts' entonces se muestra el listado de posts con ese hashtag que pertenezcan a las personas que siga el usuario que
-#navega, de lo contrario se indica que posts no se pueden visualizar.
+#navegaluego se pregunta si se quiere dejar un like y/o comentar. En caso afirmativo para ambos, se agregan las 
+#interacciones a los likes y comentarios del post.De lo contrario se indica que posts no se pueden visualizar.
 def busqueda_post(usuarios, posts, usuario1):
     while True:
 
@@ -334,14 +441,14 @@ def busqueda_post(usuarios, posts, usuario1):
         action = input(f'''Elige qué función deseas realizar: ''')
 
         if action == "1":
+            resultado = False
             usuario = input(f'Ingresa un username: ')
             for user in usuarios:
                 if (user.username).lower() == usuario.lower():
-                    if usuario1 in user.seguidores:
-                        continue
-                    else:
-                        print(f'No puedes ver los posts de {usuario1}, ya que no lo sigues')
-                else:
+                    ver_posts(usuarios, usuario, usuario1)
+                    resultado = True
+                    break
+                if not resultado:
                     print("No existe el usuario")
                     break
             resultado = False
@@ -351,7 +458,37 @@ def busqueda_post(usuarios, posts, usuario1):
                     for post in posts:
                         if post.usuario == usuario:
                             print(post.show())
-                            resultado = True
+                            seguir = input('¿Desea abrir alguna publicación en específico? Si(s) o No(n): ')
+                            if seguir == 's':
+                                identify_posts(usuarios, posts)
+                                dar_like = input('¿Desea dar un like a esta publicación? Si(s) o No(n): ')
+                                if dar_like == 's':
+                                    post.dar_like(usuario)
+                                elif dar_like == 'n':
+                                    continue
+                                else:
+                                    print('Por favor elige una opción válida')
+                                    break
+                                comentar = input('¿Quieres dejar un comentario en esta publicación? Si(s) o No(n): ')
+                                if comentar == 's':
+                                    comentario = input('Escribe el comentario que desees dejar: ')
+                                    post.comentar(usuario, comentario)
+                                    resultado = True
+                                    break
+                                elif comentar == 'n':
+                                    resultado = True
+                                    break
+                                else:
+                                    print('Por favor elige una opción válida')
+                                    break
+
+
+                            elif seguir == 'n':
+                                break
+                            else:
+                                    print('Por favor elige una opción válida')
+                                    break
+
                     if resultado == False:
                         print("No se encontró el usuario")
 
@@ -364,7 +501,35 @@ def busqueda_post(usuarios, posts, usuario1):
                 for t in post.tags:
                     if tag.lower() in t.lower():
                         print(post.show())
-                        resultado = True
+                        seguir = input('¿Desea abrir alguna publicación en específico? Si(s) o No(n): ')
+                        if seguir == 's':
+                            identify_posts(usuarios, posts)
+                            dar_like = input('¿Desea dar un like a esta publicación? Si(s) o No(n): ')
+                            if dar_like == 's':
+                                post.dar_like(usuario)
+                            elif dar_like == 'n':
+                                continue
+                            else:
+                                print('Por favor elige una opción válida')
+                                break
+                            comentar = input('¿Quieres dejar un comentario en esta publicación? Si(s) o No(n): ')
+                            if comentar == 's':
+                                comentario = input('Escribe el comentario que desees dejar: ')
+                                post.comentar(usuario, comentario)
+                                resultado = True
+                                break
+                            elif comentar == 'n':
+                                resultado = True
+                                break
+                            else:
+                                print('Por favor elige una opción válida')
+                                break
+                        elif seguir == 'n':
+                            break
+                        else:
+                                print('Por favor elige una opción válida')
+                                break
+
             if not resultado:
                 print("No se encontró el hashtag")
 
@@ -372,6 +537,162 @@ def busqueda_post(usuarios, posts, usuario1):
             break
         else:
             action = input('Por favor ingresa una opción válida')
+
+#Para eliminar un post, ejecutamos la funcion 'identify_post' que permite buscar el post exacto que buscamos eliminar. Una vez
+#identificado, se pide por teclado una reafirmacion de si se quiere eliminar el post porque es ofensivo; en caso afirmativo, se 
+#elimina el post y se da un mensaje para certificar, y dependiendo del tipo de usuario, se acredita una amonestacion al mismo. 
+#En caso contrario, simplemente sale al menu principal nuevamente. Y en caso de que los datos no coincidan, se indica que 
+#el post no pudo eliminarse.
+def eliminar_post(usuarios, posts):
+    post = identify_posts(usuarios, posts)
+    if post:
+        while True:
+            opcion = input('¿Seguro que desea eliminar este post? ¿Realmente es ofensivo? Si(s) o No(n): ')
+            if opcion.lower() == 's':
+                posts.remove(post)
+                print('Post eliminado con éxito')
+                for usuario in usuarios:
+                    if isinstance(usuario, Profesor) and usuario.dni == post.usuario:
+                        usuario.amonestaciones += 1
+                        break
+                    elif isinstance(usuario, Estudiante) and usuario.dni == post.usuario:
+                        usuario.amonestaciones += 1
+                        break
+            elif opcion.lower() == 'n':
+                break
+            else:
+                print('Por favor ingrese una opción válida')
+    else:
+        print('No se puede eliminar el post porque no se encontró el usuario o el post')
+
+
+#Para eliminar un comentario, llamamos nuevamente la funcion 'identify_post' dentro de la variable post para que no se pierdan
+#los datos del post. Una vez identificado, se pide por teclado el username de la persona y el comentario textual que realizo. Luego
+#se busca en el post ya identificado, algun comentario que coincida con los datos ingresados, si existe, se elimina y se le acredita
+#una amonestacion al usuario que lo haya comentado. En caso contrario, se indica que el comentario no se encontro.
+def eliminar_comentario(usuarios, posts):
+    post = identify_posts(usuarios, posts)
+    if post:
+        usuario = input('Ingresa el username de la persona que comentó: ')
+        user_encontrado = False
+        for user in usuarios:
+            if user.username.lower() == usuario.lower():
+                print(user.show())
+                user_encontrado = True
+                usuario_dni = user.dni
+                break
+        if not user_encontrado:
+            print("No se encontró el usuario")
+        comentario = input('Ingresa el comentario que deseas eliminar: ')
+        comentario_eliminado = False
+        for p in posts:
+            if p == post:
+                for c in p.comentarios:
+                    if usuario_dni == c[0] and comentario.lower() in c[1].lower():
+                        p.comentarios.remove(c)
+                        comentario_eliminado = True
+                        break
+                if comentario_eliminado:
+                    print('Comentario eliminado con éxito')
+                    for usuario in usuarios:
+                        if isinstance(usuario, Profesor) and usuario.dni == post.usuario:
+                            usuario.amonestaciones += 1
+                            break
+                        elif isinstance(usuario, Estudiante) and usuario.dni == post.usuario:
+                            usuario.amonestaciones += 1
+                            break
+        if not comentario_eliminado:
+            print('No se encontró el comentario')
+    else:
+        print('No se puede eliminar el comentario porque no se encontró el usuario o el post')
+
+#Para eliminar un usuario, se pide por teclado que se indique el username de dicho usuario. Luego, verificando si es profesor o
+#estudiante, se verifica el nmero de amonestaciones que tenga. Si tiene 3 o mas amonestaciones, se elimina el usuario automaticamente.
+#En caso contrario, se indica que el usuario tiene menos de 3 amonestaciones y no se elimina.
+def eliminar_usuario(usuarios):
+    usuario = input('Ingrese el username del usuario que desea eliminar: ')
+    for user in usuarios:
+        if user.username.lower() == usuario.lower():
+            if isinstance(usuario, Profesor):
+                if usuario.amonestaciones >= 3:
+                    usuarios.remove(usuario)
+                    print('Usuario eliminado con exito')
+                    break
+                else:
+                    print('El usuario tiene menos de tres amonestaciones')
+            elif isinstance(usuario, Estudiante):
+                if usuario.amonestaciones >= 3:
+                    usuarios.remove(usuario)
+                    print('Usuario eliminado con exito')
+                    break
+                else:
+                    print('El usuario tiene menos de tres amonestaciones')
+
+#Para seguir un usuario, tomamos la variable usuario1 ya dada por el menu. Comparamos si el id del usuario1 esta dentro de los
+#seguidores del usuario, en caso afirmativo, se indica que ya sigue a ese usuario y vuelve al menu principal. En caso contrario
+#se agrega el dni del usuario1 a las solicitudes del usuario y se indica que usuario1 esta dentro de las solicitudes de usuario.
+def seguir_usuario(usuario1, usuarios):
+    usuario = input('Ingrese el username del usuario que desea seguir: ')
+    usuario_encontrado = False
+    for user in usuarios:
+        if user.username.lower() == usuario.lower():
+            usuario1 = user.dni
+            usuario_encontrado = True
+            if usuario1 in user.seguidores:
+                print('Ya sigues a este usuario')
+                break
+            else:
+                user.solicitudes.append(usuario1)
+                print(f'Estás en las solicitudes de seguimiento de {user.username}, debe aceptarte para poder seguirlo')
+            break
+    if not usuario_encontrado:
+        print("El usuario no existe")
+    
+#Para dejar de seguir un usuario, tomamos la variable usuario1 ya dada por el menu. Comparamos si el id de usuario1 esta dentro de
+#la lista de seguidores de usuario, en caso afirmativo, se elimina a usuario1 de la lista de seguidores de usuario. En caso contrario,
+#se indica que usuario1 no sigue a usuario.
+def dejar_seguir_usuario(usuario1, usuarios):
+    usuario = input('Ingrese el username del usuario que desea dejar de seguir: ')
+    usuario_encontrado = False
+    for user in usuarios:
+        if user.username.lower() == usuario.lower():
+            usuario1 = user.dni
+            usuario_encontrado = True
+            if usuario1 in user.seguidores:
+                user.seguidores.remove(usuario1)
+                print('Dejaste de seguir a este usuario')
+            else:
+                print('No sigues a este usuario')
+            break
+    if not usuario_encontrado:
+        print("El usuario no existe")
+
+#Para revisar solicitudes, tomamos la variable usuario1 ya dad por el menu. Imprimimos las solicitudes que hayan para usuario1.
+#Preguntamos por teclado si se desea aceptar alguna solicitud, en caso afirmativo, se pide por teclado que se ingrese el id de 
+#la solicitud que se quiere aceptar, se verifica que el id no este en seguidores y se agrega a la lista de seguidores. 
+# En caso contrario se indica que ya se sigue a ese usuario.
+def revisar_solicitudes(usuario1, usuarios):
+   while True:
+    print(usuario1.solicitudes)
+    opcion = input('Deseas aceptar alguna solicitud?: Si(s) o No(n): ')
+    if opcion == 's':
+        usuario = input('Ingresa el id de la solicitud que desees aceptar: ')
+        usuario_encontrado = False
+        for user in usuarios:
+            if user.username.lower() == usuario.lower():
+                usuario_encontrado = True
+                if usuario1 not in user.seguidores:
+                    user.seguidores.append(usuario1)
+                    print(f'Ahora sigues a {user.username}')
+                else:
+                    print('Ya sigues a este usuario')
+                break
+            if not usuario_encontrado:
+                print("El usuario no existe")
+    elif opcion == 'n':
+        break
+    else:
+       print('Ingrese una opcion valida')
 
 
 main()
